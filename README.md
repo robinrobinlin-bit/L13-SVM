@@ -1,105 +1,105 @@
-# SVM Teaching Interactive Streamlit App
+# SVM Concept Animation + sklearn Decision Surface + Streamlit Teaching Website
 
-## 目標
-建立一個 **可部署至 Streamlit Community Cloud** 的教學網站，用於說明 Support Vector Machine（SVM）的概念、數學直覺、margin、support vectors、kernel trick，並提供使用者即時調整參數、觀察決策邊界的互動體驗。
+## Project Overview
+This repository provides a **premium, beginner‑friendly** interactive teaching website for Support Vector Machines (SVM). It combines:
+- **Manim** animation videos (pre‑rendered locally) that illustrate margin, support vectors, kernel trick, and 2D→3D mapping.
+- **scikit‑learn** `SVC` models for real‑time training and decision‑surface rendering.
+- **NumPy** for data generation and meshgrid handling.
+- **Matplotlib** for clear 2‑D decision‑boundary visualisation.
+- **Plotly (graph_objects)** for an interactive 3‑D kernel‑trick concept visualisation.
+- **Streamlit** for the web UI, deployable to Streamlit Community Cloud.
 
-## 目錄結構
-```
-svm-streamlit-teaching/   (本專案根目錄)
-│
-├─ app.py                     # Streamlit 入口，會自動載入 pages/*.py
-├─ requirements.txt           # 部署所需的 Python 套件（不含 manim）
-├─ .gitignore                 # 常見的 Python / Streamlit 忽略檔案
-├─ README.md                  # 本檔案
-│
-├─ assets/
-│   └─ videos/                # 渲染好的 mp4 / webm（若缺失會顯示提示）
-│
-├─ manim_scenes/              # 本機開發用的 Manim 腳本 (不會部署)
-│   ├─ svm_margin_scene.py
-│   ├─ support_vectors_scene.py
-│   └─ kernel_trick_scene.py
-│
-├─ utils/                     # 模組化程式碼
-│   ├─ __init__.py            # 讓 utils 成為套件
-│   ├─ datasets.py
-│   ├─ svm_model.py
-│   ├─ plotting.py
-│   └─ explanations.py        # 目前為空，可自行加入中文說明文字
-│
-└─ pages/                     # Streamlit 多頁面
-    ├─ 1_SVM_Concept.py
-    ├─ 2_Margin_and_Support_Vectors.py
-    ├─ 3_Interactive_SVM.py
-    ├─ 4_Kernel_Experiments.py
-    └─ 5_Quiz.py
-```
-
-## 如何在本機執行
-```bash
-# 1. 進入專案目錄
-cd C:\Users\user\Desktop\hw8_svm
-
-# 2. 建立虛擬環境（建議）
-python -m venv .venv
-.\.venv\Scripts\activate   # PowerShell / CMD
-
-# 3. 安裝套件
-pip install -r requirements.txt
-
-# 4. 執行 Streamlit
-streamlit run app.py
-```
-瀏覽器會自動開啟 `http://localhost:8501`，左側選單即為 1~5 頁。
-
-## Manim 影片製作（本機）
-1. 安裝 Manim（若未安裝）
-```bash
-pip install manim
-```
-2. 在 `manim_scenes/` 編寫動畫腳本（已提供空白範本）
-3. 渲染指令範例：
-```bash
-manim -pqh manim_scenes/svm_margin_scene.py SVMMarginScene
-manim -pqh manim_scenes/support_vectors_scene.py SupportVectorsScene
-manim -pqh manim_scenes/kernel_trick_scene.py KernelTrickScene
-```
-4. 產生的影片放入 `assets/videos/`，必須命名為：
-   - `svm_margin_intro.mp4`
-   - `support_vectors_intro.mp4`
-   - `kernel_trick_intro.mp4`
-   若未放入，對應頁面會顯示提醒文字。
-
-## 部署至 Streamlit Community Cloud
-1. **Push 專案到 GitHub**（或其他 Git 平台）
-```bash
-git init
-git add .
-git commit -m "Initial MVP"
-git remote add origin <your-repo-url>
-git branch -M main
-git push -u origin main
-```
-2. 前往 https://share.streamlit.io，登入後點 **New app** → 連結您的 repo → 設定 **Main file path** 為 `app.py`。
-3. 若需要固定 Python 版本，於 Streamlit Cloud 設定頁面選擇 **Python 3.11**（建議）。
-4. 點 **Deploy**，系統會自動安裝 `requirements.txt`，完成後即可取得公開 URL。
-5. **影片注意**：若 Cloud 上找不到 `assets/videos/*.mp4`，會顯示提示。您可以將大檔影片上傳至 YouTube / Google Drive / Cloudflare，然後把 `st.video()` 裡的路徑改成對應的 URL（只要在 `pages/` 中手動修改即可）。
-
-## 常見問題排除 (FAQ)
-| 問題 | 解決方法 |
-|------|----------|
-| **影片不顯示** | 確認 `assets/videos/` 中有正確的檔名，或在 `pages/*.py` 中把 `st.video()` 改成 `st.video(<外部URL>)` |
-| **部署失敗 – 缺少系統套件** | 本 MVP 不需要任何系統依賴；若您在 Cloud 上自行加入 `manim`，請參考官方 `packages.txt`（FFmpeg、Cairo、Pango 等） |
-| **Plotly 圖表卡住** | 資料量上限已限制在 500，使用 `st.cache_data` / `st.cache_resource`，若仍慢可減少 `n_samples` 或改用 `resolution=0.05` 修改 `make_meshgrid` 的 `h` 參數 |
-| **程式報錯 `module not found: utils`** | 確認執行 `streamlit run app.py` 時的工作目錄是專案根目錄，或在 `app.py` 前加 `import sys, os; sys.path.append(os.path.abspath('.'))`（已在 `app.py` 中隱式完成） |
-
-## 後續可加入的加分功能
-- 參數比較表與 kernel 適用情境表格（Markdown 放在適當頁面）
-- 圖表下載按鈕：`st.download_button` 下載 Plotly 圖為 PNG
-- 支援向量比例（`len(model.support_vectors_) / len(y)`）顯示於模型資訊區塊
-- 小測驗分數統計與回饋文字（目前已顯示總分）
-- 每頁底部「下一步建議」文字區塊
-- 3D Plotly 互動（在 `4_Kernel_Trick.py` 中加入 `go.Surface`）
+All dependencies are listed in `requirements.txt` **without** `manim` to keep the cloud deployment lightweight.
 
 ---
-**祝您開發順利！如需進一步功能（如第 4/5 頁的 UI 美化、3D 可視化等），隨時告訴我，我會立即補上程式碼。**
+
+## Directory Structure
+```
+svm_manim_streamlit/
+│   app.py
+│   requirements.txt
+│   README.md
+│   .gitignore
+│
+├─ assets/
+│   ├─ videos/          # pre‑rendered MP4 files from Manim
+│   │   ├─ svm_margin.mp4
+│   │   ├─ svm_support_vectors.mp4
+│   │   ├─ svm_kernel_trick.mp4
+│   │   └─ svm_3d_mapping.mp4
+│   └─ images/
+│       └─ svm_cover.png
+│
+├─ manim_scenes/
+│   ├─ scene_01_margin.py
+│   ├─ scene_02_support_vectors.py
+│   ├─ scene_03_kernel_trick.py
+│   └─ scene_04_3d_mapping.py
+│
+├─ src/
+│   ├─ data_generator.py
+│   ├─ svm_model.py
+│   ├─ decision_boundary.py
+│   ├─ plots_2d.py
+│   ├─ plots_3d.py
+│   └─ teaching_text.py
+│
+└─ pages/
+    ├─ 0_Theory.py
+    ├─ 1_Linear_SVM.py
+    ├─ 2_Margin_and_Support_Vectors.py
+    ├─ 3_Kernel_Trick.py
+    ├─ 4_RBF_Decision_Surface.py
+    └─ 5_Quiz_and_Summary.py
+```
+
+---
+
+## Local Setup & Execution
+```bash
+# 1. Install Python dependencies
+pip install -r requirements.txt
+
+# 2. Run the Streamlit app locally
+streamlit run app.py
+```
+
+The website will be accessible at `http://localhost:8501`.
+
+---
+
+## Generating Manim Animations (local only)
+Manim is **not** required for deployment. To create the concept videos locally:
+```bash
+pip install manim
+
+# Render each scene (high‑quality, quiet mode)
+manim -pqh manim_scenes/scene_01_margin.py LinearSVMMargin
+manim -pqh manim_scenes/scene_02_support_vectors.py SupportVectorsScene
+manim -pqh manim_scenes/scene_03_kernel_trick.py KernelTrickScene
+manim -pqh manim_scenes/scene_04_3d_mapping.py Mapping3DScene
+```
+Move the generated MP4 files into `assets/videos/` (the filenames above).
+
+---
+
+## Deploy to Streamlit Community Cloud
+1. Push the repository to GitHub.
+2. Ensure `requirements.txt` **does not** contain `manim`.
+3. In Streamlit Cloud, create a new app, select the repository, and set **Main file path** to `app.py`.
+4. Deploy – the site will load the pre‑rendered videos and all interactive components.
+
+---
+
+## Teaching Highlights (Chinese)
+- SVM 是 **Support Vector Machine**，用於二元分類。
+- **Margin**：決策邊界兩側最近點的距離，SVM 目標是最大化 margin。
+- **Support Vectors**：距離邊界最近的資料點，決定模型位置。
+- **C** 參數：控制錯誤容忍度，C 大 → 罰款錯誤多，模型可能過擬合。
+- **Gamma** 參數：RBF kernel 的影響範圍，Gamma 大 → 邊界更彎曲、易過擬合。
+- **Kernel Trick**：將資料映射到更高維空間，使非線性可分資料在新空間線性可分。此概念的 3‑D 圖僅為視覺化說明，實際的 RBF kernel 對應的是高維甚至無限維空間。
+
+---
+
+## License
+MIT License

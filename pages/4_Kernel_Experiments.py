@@ -5,6 +5,7 @@ import numpy as np
 from utils.datasets import generate_dataset
 from utils.svm_model import train_svm
 from utils.plotting import plot_decision_boundary
+from src import manim_runner
 
 st.title("SVM 教學互動網站 - 第 4 章：Kernel Trick")
 
@@ -17,11 +18,11 @@ st.markdown("""
 """)
 
 # 影片播放（如果有）
-video_path = os.path.join("assets", "videos", "kernel_trick_intro.mp4")
+video_path = os.path.join("assets", "videos", "svm_kernel_trick.mp4")
 if os.path.exists(video_path):
-    st.video(video_path)
+    st.video(str(video_path))
 else:
-    st.info("請先使用 Manim 產生 `kernel_trick_intro.mp4` 並放置於 `assets/videos/` 資料夾。")
+    st.info("請先使用 Manim 產生 `svm_kernel_trick.mp4` 並放置於 `assets/videos/` 資料夾。")
 
 st.sidebar.header("互動參數")
 
@@ -43,6 +44,23 @@ if kernel_option in ["rbf", "poly"]:
     gamma_value = st.sidebar.slider("Gamma", 0.001, 10.0, 1.0, 0.001)
 else:
     gamma_value = "scale"
+
+# ------------------- 動畫參數 (示例) -------------------
+anim_param = st.sidebar.slider("Animation parameter", 0.0, 5.0, 1.0, 0.1)
+if "prev_anim_param" not in st.session_state:
+    st.session_state.prev_anim_param = anim_param
+
+if anim_param != st.session_state.prev_anim_param:
+    with st.spinner("產生 Manim 動畫..."):
+        success, msg = manim_runner.generate_video(
+            scene_file="manim_scenes/scene_03_kernel_trick.py",
+            class_name="KernelTrickScene",
+        )
+        if success:
+            st.success("影片已產生，重新載入中…")
+        else:
+            st.error(f"產生影片失敗: {msg}")
+    st.session_state.prev_anim_param = anim_param
 
 if kernel_option == "poly":
     degree_value = st.sidebar.slider("Degree", 2, 5, 3, 1)

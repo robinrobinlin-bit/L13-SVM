@@ -1,102 +1,47 @@
 # src/plots_3d.py
+"""3D 繪圖模組，使用 plotly 產生互動式 3D Kernel Trick 示意圖。
+此模組會將資料點以及模型在高維映射後的決策函數值，以 3D 表面呈現。
 """
-3D 繪圖模組 – 用於展示 Kernel Trick 概念 (將 2D 資料映射到 3D 空間)
-
-核心映射函式為: z = x^2 + y^2
-此模組使用 Plotly 產生可旋轉、縮放的 3D 散點圖，並在圖中加入概念性決策平面。
-"""
-
-from __future__ import annotations
-
 import numpy as np
 import plotly.graph_objects as go
 
+from .decision_boundary import create_meshgrid, predict_grid
 
-def kernel_mapping_3d(X: np.ndarray, y: np.ndarray) -> go.Figure:
-    """將 2D 資料 X 映射到 3D 空間，z = x^2 + y^2。
 
-    參數說明:
-    - X: shape (n_samples, 2) 的特徵矩陣
-    - y: shape (n_samples,) 的標籤 (0 或 1)
-    
-    回傳:
-    - Plotly Figure，包含 3D 散點與簡易的概念決策平面 (z = x^2 + y^2)。
+def plot_3d_decision_surface(model, X, y, h=0.1, title="3D Kernel Trick 示意圖"):
+    """產生 3D 決策面圖。
+    - model: 已訓練的 sklearn SVC
+    - X, y: 原始資料
+    - h: meshgrid 間距，較大以減少計算量
+    回傳 plotly.graph_objects.Figure 物件，可直接於 Streamlit 中 st.plotly_chart 顯示。
     """
-    # 計算 z 座標
-    z = np.square(X[:, 0]) + np.square(X[:, 1])
-
-    # 建立顏色對應
-    colors = np.where(y == 0, "royalblue", "orange")
-    labels = np.where(y == 0, "Class 0", "Class 1")
-
-    fig = go.Figure()
-    # 3D scatter
-    fig.add_trace(
+    # 建立 2D 網格
+    xx, yy = create_meshgrid(X, h=h)
+    # 使用模型的決策函數取得距離平面之分數（越正/負代表屬於哪一類）
+    if hasattr(model, "decision_function"):
+        grid_points = np.c_[xx.ravel(), yy.ravel()]
+        zz = model.decision_function(grid_points).reshape(xx.shape)
+    else:
+        # fallback: 預測類別作為高度
+        zz = predict_grid(model, xx, yy)
+    # 建立 3D 曲面圖
+    fig = go.Figure(data=[
+        go.Surface(x=xx, y=yy, z=zz, colorscale="RdBu", opacity=0.7, showscale=False),
         go.Scatter3d(
-            x=X[:, 0],
-            y=X[:, 1],
-            z=z,
+            x=X[:, 0], y=X[:, 1], z=np.zeros_like(X[:, 0]),
             mode="markers",
-            marker=dict(size=4, color=colors),
-            name="Data Points",
-            hovertemplate="x=%{x:.2f}<br>y=%{y:.2f}<br>z=%{z:.2f}<extra></extra>",
-        )
-    )
-    # 加一個概念平面 (實際上是 z = x^2 + y^2 的曲面) – 使用 meshgrid 繪製曲面
-    grid_x = np.linspace(X[:, 0].min() - 0.5, X[:, 0].max() + 0.5, 30)
-    grid_y = np.linspace(X[:, 1].min() - 0.5, X[:, 1].max() + 0.5, 30)
-    gx, gy = np.meshgrid(grid_x, grid_y)
-    gz = np.square(gx) + np.square(gy)
-    fig.add_trace(
-        go.Surface(
-            x=gx,
-            y=gy,
-            z=gz,
-            colorscale="Greys",
-            opacity=0.4,
-            name="Mapping Surface",
-            showscale=False,
-        )
-    )
-
-    fig.update_layout(
-        scene=dict(
-            xaxis_title="x",
-            yaxis_title="y",
-            zaxis_title="z = x² + y²",
+            marker=dict(size=5, color=y, colorscale="Portland"),
+            name="資料點",
         ),
-        title="Kernel Trick 概念 – 2D → 3D 映射",
-        legend=dict(x=0.02, y=0.98),
+    ])
+    fig.update_layout(
+        title=title,
+        scene=dict(
+            xaxis_title="特徵 1",
+            yaxis_title="特徵 2",
+            zaxis_title="決策函數值",
+            camera=dict(eye=dict(x=1.25, y=1.25, z=1.25)),
+        ),
         margin=dict(l=0, r=0, b=0, t=30),
     )
-    return fig
-
-
-def plot_3d_decision_surface_concept(X: np.ndarray, y: np.ndarray) -> go.Figure:
-    """展示使用 RBF kernel 產生的非線性決策面概念（示意圖）。
-    
-    此函式先以 kernel_mapping_3d 繪製映射曲面，然後在同一圖中加入一條概念決策平面。
-    決策平面僅為示意，使用 z = 0 作為分割平面（實際 RBF 會產生更複雜的曲面）。
-    """
-    fig = kernel_mapping_3d(X, y)
-    # 添加概念決策平面 (z = constant) 以示範在 3D 中的線性分割
-    # 這裡選擇 z = np.mean(z) 作為平面高度
-    z_mean = np.mean(np.square(X[:, 0]) + np.square(X[:, 1]))
-    # 建立平面座標
-    plane_x = np.array([X[:, 0].min() - 0.5, X[:, 0].max() + 0.5])
-    plane_y = np.array([X[:, 1].min() - 0.5, X[:, 1].max() + 0.5])
-    px, py = np.meshgrid(plane_x, plane_y)
-    pz = np.full_like(px, z_mean)
-    fig.add_trace(
-        go.Surface(
-            x=px,
-            y=py,
-            z=pz,
-            colorscale=[[0, "rgba(0,255,0,0.2)"], [1, "rgba(0,255,0,0.2)"]],
-            showscale=False,
-            name="Decision Plane (概念)",
-            opacity=0.5,
-        )
-    )
-    fig.update_layout(title="Kernel Trick – 3D Conceptual Decision Surface")
     return fig
