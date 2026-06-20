@@ -31,7 +31,7 @@ svm-streamlit-teaching/   (本專案根目錄)
     ├─ 1_SVM_Concept.py
     ├─ 2_Margin_and_Support_Vectors.py
     ├─ 3_Interactive_SVM.py
-    ├─ 4_Kernel_Experiments.py
+    ├─ 4_Kernel_Trick.py
     └─ 5_Quiz.py
 ```
 

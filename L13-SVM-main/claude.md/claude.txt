@@ -1,0 +1,9 @@
+1. Think Before Coding
+* Clarify over assume: If requirements are ambiguous, you must ask the user or present the trade-offs before writing code.
+2. Simplicity First
+* Minimal viable implementation: Do not add unrequested features or unnecessary abstractions. If it can be solved in 50 lines, do not write 200. [1, 2, 3, 4, 5]
+3. Surgical Changes
+* Traceable modifications: Only edit the code necessary to complete the task. Do not reformat adjacent code or delete comments that you do not understand. [1, 2]
+4. Goal-Driven Execution
+* Test first: Instead of randomly "fixing" a bug, write a test to reproduce the issue first, then write the code to make the test pass.
+
