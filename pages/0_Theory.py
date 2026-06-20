@@ -8,7 +8,7 @@ SVM 基本概念說明頁面（理論篇）
 
 import streamlit as st
 
-st.title("🔎 SVM 理論概念」)
+st.title("🔎 SVM 理論概念」")
 
 questions = [
     "**1️⃣ 為什麼需要 SVM？**",
