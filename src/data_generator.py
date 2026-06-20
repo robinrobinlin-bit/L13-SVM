@@ -1,47 +1,104 @@
 # src/data_generator.py
-"""資料產生模組，提供各種合成資料集供 SVM 教學使用。
-使用 sklearn.datasets 產生 linear、moons、circles、blobs 四種資料。
-所有函式回傳 (X, y) 其中 X 為 shape (n_samples, 2) 的特徵陣列，y 為標籤。
 """
+Data generation utilities for the SVM 教學專案。
+
+提供四種常見的二元分類資料集，支援使用者自行指定樣本數（100~500）
+以及隨機噪聲程度。所有資料皆返回 NumPy 陣列 (X, y)。
+"""
+
+from __future__ import annotations
+
 import numpy as np
-from sklearn.datasets import make_blobs, make_moons, make_circles
+from sklearn.datasets import make_moons, make_circles, make_blobs
 
 
-def generate_linear_data(n_samples=200, noise=0.1, random_state=42):
-    """產生線性可分的二元資料。
-    透過兩個高斯中心點產生，加入少量 noise。
+def _validate_n_samples(n_samples: int) -> int:
+    """驗證樣本數是否在 100~500 範圍內，若超出則自動截取。
+
+    Returns the (clamped) integer number of samples.
     """
-    X, y = make_blobs(
-        n_samples=n_samples,
-        centers=2,
-        n_features=2,
-        cluster_std=0.8,
-        random_state=random_state,
-    )
-    # 加入噪聲
-    X += noise * np.random.randn(*X.shape)
+    if n_samples < 100:
+        return 100
+    if n_samples > 500:
+        return 500
+    return n_samples
+
+
+def generate_linear_data(
+    n_samples: int = 200,
+    noise: float = 0.1,
+    random_state: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """產生線性可分的二維資料。
+
+    參數說明:
+    - n_samples: 樣本筆數，會被限制在 100~500 之間。
+    - noise: 高斯噪聲的標準差，預設 0.1。
+    - random_state: 讓結果可重現。
+    """
+    n_samples = _validate_n_samples(n_samples)
+    rng = np.random.RandomState(random_state)
+    # 隨機產生點，之後依據 x0 + x1 > 0 分類
+    X = rng.randn(n_samples, 2)
+    y = (X[:, 0] + X[:, 1] > 0).astype(int)
+    X += noise * rng.randn(*X.shape)
     return X, y
 
 
-def generate_moons_data(n_samples=200, noise=0.2, random_state=42):
-    """產生兩月形（moons）資料，非線性可分的典型例子。"""
+def generate_moons_data(
+    n_samples: int = 200,
+    noise: float = 0.1,
+    random_state: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """產生 classic "moons" 資料集（兩個半月形），使用 sklearn 的 make_moons。"""
+    n_samples = _validate_n_samples(n_samples)
     X, y = make_moons(n_samples=n_samples, noise=noise, random_state=random_state)
     return X, y
 
 
-def generate_circles_data(n_samples=200, noise=0.2, factor=0.5, random_state=42):
-    """產生同心圓資料，適合展示 kernel trick。"""
-    X, y = make_circles(n_samples=n_samples, noise=noise, factor=factor, random_state=random_state)
-    return X, y
-
-
-def generate_blobs_data(n_samples=200, centers=3, cluster_std=1.0, random_state=42):
-    """產生多中心的 blob 資料，用於展示多類別或較雜訊的情境。"""
-    X, y = make_blobs(
+def generate_circles_data(
+    n_samples: int = 200,
+    noise: float = 0.1,
+    factor: float = 0.5,
+    random_state: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """產生 concentric circles（同心圓）資料集。"""
+    n_samples = _validate_n_samples(n_samples)
+    X, y = make_circles(
         n_samples=n_samples,
-        centers=centers,
-        n_features=2,
-        cluster_std=cluster_std,
+        noise=noise,
+        factor=factor,
         random_state=random_state,
     )
     return X, y
+
+
+def generate_blobs_data(
+    n_samples: int = 200,
+    centers: int = 2,
+    cluster_std: float = 1.0,
+    noise: float = 0.0,
+    random_state: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """產生高斯混合 (blobs) 資料集。
+
+    參數 `centers` 目前固定為 2，以符合二元分類需求。
+    """
+    n_samples = _validate_n_samples(n_samples)
+    X, y = make_blobs(
+        n_samples=n_samples,
+        centers=centers,
+        cluster_std=cluster_std,
+        random_state=random_state,
+    )
+    if noise > 0:
+        rng = np.random.RandomState(random_state)
+        X += noise * rng.randn(*X.shape)
+    return X, y
+
+# ------------------------------------------------------------
+# 範例使用（在 Jupyter 或 Streamlit 中可直接呼叫）
+# ------------------------------------------------------------
+# ```python
+# X, y = generate_linear_data(n_samples=300, noise=0.05)
+# ```

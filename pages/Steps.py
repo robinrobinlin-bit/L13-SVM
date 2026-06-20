@@ -14,7 +14,7 @@ steps = [
     "**Step 3：不是隨便一條線，而是 margin 最大的線** – SVM 會選取使兩類最近點之間的間隔（margin）最大的分隔線。",
     "**Step 4：靠近邊界的點叫 support vectors** – 位於 margin 兩側、最貼近分隔線的資料點稱為 support vectors，它們決定了最終模型。",
     "**Step 5：資料線性不可分時，使用 kernel trick** – 透過核函式將資料映射至更高維空間，使原本不可分的資料在新空間中變得線性可分。",
-    "**Step 6：RBF kernel 可以產生非線性決策邊界** – 事實上，RBF 核不會把資料顯式映射到 3D，而是透過 kernel function 在高維特徵空間計算相似度，使得在原始 2D 空間呈現非線性邊界。注意：3D 圖是 Kernel Trick 的概念視覺化，不代表 RBF SVM 只映射到 3 維。實際上 RBF kernel 對應的是非常高維甚至無限維的特徵空間。",
+    "**Step 6：RBF kernel 可以產生非線性決策邊界** – 常用的徑向基 (RBF) 核會在高維空間中產生彎曲的決策面，對應回 2D 時形成非線性邊界。",
     "**Step 7：sklearn SVC 實作** – 最後使用 scikit‑learn 的 `SVC` 進行模型訓練、預測與可視化。",
 ]
 

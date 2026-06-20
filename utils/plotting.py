@@ -2,34 +2,17 @@ import numpy as np
 import plotly.graph_objects as go
 from sklearn.metrics import accuracy_score
 
-def make_meshgrid(X, resolution=100):
-    """Create a meshgrid covering the data range.
-
-    Args:
-        X: (n_samples, 2) feature array.
-        resolution: number of points per axis (e.g., 100 or 200).
-    Returns:
-        xx, yy: meshgrid arrays of shape (resolution, resolution).
-    """
+def make_meshgrid(X, h=0.02):
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-    # 使用等距的 linspace 產生指定解析度的座標
-    xx, yy = np.meshgrid(
-        np.linspace(x_min, x_max, resolution),
-        np.linspace(y_min, y_max, resolution)
-    )
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
     return xx, yy
 
-def plot_decision_boundary(model, X, y, title="Decision Boundary", resolution=100):
+def plot_decision_boundary(model, X, y, title="Decision Boundary"):
     """Return a Plotly Figure showing data points, decision surface, support vectors.
-
-    Args:
-        model: trained sklearn SVC model.
-        X, y: dataset.
-        title: plot title.
-        resolution: meshgrid resolution passed to make_meshgrid.
+    If the kernel is linear, also draw the margin lines.
     """
-    xx, yy = make_meshgrid(X, resolution=resolution)
+    xx, yy = make_meshgrid(X)
     grid = np.c_[xx.ravel(), yy.ravel()]
     Z = model.predict(grid)
     Z = Z.reshape(xx.shape)

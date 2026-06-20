@@ -1,68 +1,54 @@
-# app.py
-"""Streamlit 主入口，負責載入各個教學頁面並提供全域樣式。
-此檔案使用動態 import 機制，根據側邊欄的選單載入 pages 目錄下的 Python 模組。
-所有中文說明、註解均採用繁體中文，並套用 Inter 字體與深色主題以提升視覺品質。
-"""
-import importlib
-import os
 import streamlit as st
+import numpy as np
+import pandas as pd
+from sklearn import datasets
+from sklearn.svm import SVC
+import plotly.graph_objects as go
 
-# ---------- 全域樣式 ----------
-# 使用 Google Fonts 的 Inter，並設定深色主題
-st.set_page_config(page_title="SVM 教學互動網站", layout="centered")
+def main():
+    st.set_page_config(page_title="SVM 教學互動網站", layout="wide")
+    st.title("SVM 教學互動網站 (MVP)")
+    
+    st.sidebar.title("章節選單")
+    page = st.sidebar.radio("選擇頁面", ["首頁", "SVM 互動演示"])
 
-# 自訂 CSS（包含字體與配色）
-custom_css = """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-        html, body, div, span, applet, object, iframe,
-        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-        a, abbr, acronym, address, big, cite, code,
-        del, dfn, em, img, ins, kbd, q, s, samp,
-        small, strike, strong, sub, sup, tt, var,
-        b, u, i, center,
-        dl, dt, dd, ol, ul, li,
-        fieldset, form, label, legend,
-        table, caption, tbody, tfoot, thead, tr, th, td {
-            font-family: 'Inter', sans-serif;
-        }
-        .stApp {
-            background: linear-gradient(135deg, #1e1e2f, #2e2e3f);
-            color: #f0f0f0;
-        }
-        .stSidebar {
-            background: #252539;
-        }
-        .stButton>button {
-            background-color: #4e79a7;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 0.5rem 1rem;
-        }
-        .stSlider>div > div > div > div {
-            background: #4e79a7;
-        }
-    </style>
-"""
-st.markdown(custom_css, unsafe_allow_html=True)
+    if page == "首頁":
+        st.write("這是首頁，使用左側選單切換不同章節。")
+        st.write("本 MVP 實作了 SVM 的互動視覺化，幫助理解超平面與邊界。")
+    
+    elif page == "SVM 互動演示":
+        st.header("SVM 互動演示")
+        
+        # Sidebar controls
+        C = st.sidebar.slider("C (正規化強度)", 0.01, 10.0, 1.0)
+        kernel = st.sidebar.selectbox("Kernel", ["linear", "rbf"])
+        
+        # Generate dummy data
+        X, y = datasets.make_blobs(n_samples=50, centers=2, random_state=6, cluster_std=0.60)
+        
+        # Fit SVM
+        clf = SVC(kernel=kernel, C=C)
+        clf.fit(X, y)
+        
+        # Visualization
+        fig = go.Figure()
+        
+        # Add points
+        fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode='markers', 
+                                 marker=dict(color=y, colorscale='Viridis', size=10)))
+        
+        # Create grid for decision boundary
+        x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+        y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+        xx, yy = np.meshgrid(np.linspace(x_min, x_max, 50), np.linspace(y_min, y_max, 50))
+        Z = clf.decision_function(np.c_[xx.ravel(), yy.ravel()])
+        Z = Z.reshape(xx.shape)
+        
+        # Add contour
+        fig.add_trace(go.Contour(x=np.linspace(x_min, x_max, 50), y=np.linspace(y_min, y_max, 50), z=Z, 
+                                 colorscale='RdBu', opacity=0.3, showscale=False, contours=dict(start=-1, end=1, size=0.1)))
+        
+        st.plotly_chart(fig, use_container_width=True)
 
-# ---------- 側邊欄選單 ----------
-st.sidebar.title("SVM 教學導航")
-page_options = {
-    "0. 理論概述": "pages.0_Theory",
-    "1. 線性 SVM": "pages.1_Linear_SVM",
-    "2. Margin 與 Support Vectors": "pages.2_Margin_and_Support_Vectors",
-    "3. Kernel Trick": "pages.3_Kernel_Trick",
-    "4. RBF Decision Surface": "pages.4_RBF_Decision_Surface",
-    "5. 小測驗 & 總結": "pages.5_Quiz_and_Summary",
-}
-selected = st.sidebar.radio("選擇頁面", list(page_options.keys()))
-module_path = page_options[selected]
-
-# 動態載入並執行
-module = importlib.import_module(module_path)
-if hasattr(module, "run"):
-    module.run()
-else:
-    st.error("該頁面缺少 run() 函式")
+if __name__ == "__main__":
+    main()

@@ -1,31 +1,60 @@
 # src/svm_model.py
-"""SVM 模型相關函式，封裝 sklearn.svm.SVC 的訓練與評估。"""
+"""
+SVM Model utilities for the SVM 教學專案.
+
+提供以下功能:
+- 訓練 SVM 模型 (支援自訂 kernel、C、gamma、degree)
+- 取得支援向量
+- 計算模型在測試資料上的準確度
+
+所有函式均加入中文說明與型別提示，方便在 Streamlit 中直接呼叫。
+"""
+
+from __future__ import annotations
+
+from typing import Tuple
+import numpy as np
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 
 
-def train_svm_model(X, y, kernel="linear", C=1.0, gamma="scale", degree=3):
-    """使用 sklearn 訓練 SVM 模型。
-    參數說明：
-    - X, y: 訓練資料
-    - kernel: linear / rbf / poly / sigmoid
-    - C: 正則化參數
-    - gamma: RBF/Poly/Sigmoid 的 kernel coefficient
-    - degree: 多項式核的次數 (僅在 poly 時使用)
-    回傳 (model, accuracy)
+def train_svm_model(
+    X: np.ndarray,
+    y: np.ndarray,
+    kernel: str = "linear",
+    C: float = 1.0,
+    gamma: str | float = "scale",
+    degree: int = 3,
+) -> SVC:
+    """訓練一個 Support Vector Machine 模型。
+
+    參數說明:
+    - X: 特徵矩陣，形狀 (n_samples, n_features)
+    - y: 標籤向量，形狀 (n_samples,)
+    - kernel: 核函式類型，支援 "linear", "rbf", "poly", "sigmoid"
+    - C: 正則化參數，C 越大模型越不容許錯誤分類
+    - gamma: 核函式的 gamma 參數，對於 "rbf"、"poly"、"sigmoid" 有效；
+      亦可使用 "scale" 或 "auto"
+    - degree: 多項式核的階數 (僅在 kernel='poly' 時使用)
+
+    回傳:
+    - 訓練好的 sklearn.svm.SVC 物件
     """
+    # 建立 SVC 物件，所有參數皆直接傳入 sklearn
     model = SVC(kernel=kernel, C=C, gamma=gamma, degree=degree, probability=False)
     model.fit(X, y)
-    acc = accuracy_score(y, model.predict(X))
-    return model, acc
+    return model
 
 
-def get_support_vectors(model):
-    """取得模型的 support vectors (numpy 陣列)。"""
+def get_support_vectors(model: SVC) -> np.ndarray:
+    """取得訓練好的模型之 support vectors。
+
+    返回形狀為 (n_support_vectors, n_features) 的 numpy 陣列。
+    """
     return model.support_vectors_
 
 
-def calculate_accuracy(model, X, y):
-    """計算模型在給定資料上的準確率。"""
-    pred = model.predict(X)
-    return accuracy_score(y, pred)
+def calculate_accuracy(model: SVC, X: np.ndarray, y: np.ndarray) -> float:
+    """計算模型在給定測試資料上的分類準確率。"""
+    y_pred = model.predict(X)
+    return float(accuracy_score(y, y_pred))
