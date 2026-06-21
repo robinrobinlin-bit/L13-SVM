@@ -150,6 +150,62 @@ def run():
         )
         st.plotly_chart(fig3d, use_container_width=True)
 
+        # RBF Kernel Feature Mapping
+        if kernel_3d == "rbf":
+            st.subheader("RBF Kernel Feature Mapping")
+            st.markdown("""RBF kernel 透過將資料映射到高維空間，使原本無法線性分割的資料能被超平面分開。""")
+            if dataset_name in ["circles", "moons"]:
+                st.info("非線性資料集（circles/moons）展示 RBF 曲面效果。")
+            # Ensure meshgrid exists (reuse xx, yy if already defined)
+            try:
+                _ = xx
+                _ = yy
+            except NameError:
+                x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+                y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+                xx, yy = np.meshgrid(
+                    np.linspace(x_min, x_max, 100),
+                    np.linspace(y_min, y_max, 100)
+                )
+                grid = np.c_[xx.ravel(), yy.ravel()]
+                zz = model_3d.decision_function(grid).reshape(xx.shape)
+            else:
+                zz = model_3d.decision_function(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+
+            fig_rbf = go.Figure()
+            fig_rbf.add_surface(x=xx, y=yy, z=zz, colorscale="Viridis", showscale=False, opacity=0.8)
+            # Overlay data points
+            fig_rbf.add_scatter3d(
+                x=X[:, 0],
+                y=X[:, 1],
+                z=np.zeros_like(y),
+                mode="markers",
+                marker=dict(
+                    color=["red" if label == 0 else "blue" for label in y],
+                    size=4,
+                ),
+                name="Data",
+            )
+            # Overlay support vectors if available
+            try:
+                sv = model_3d.support_vectors_
+                fig_rbf.add_scatter3d(
+                    x=sv[:, 0],
+                    y=sv[:, 1],
+                    z=np.zeros(sv.shape[0]),
+                    mode="markers",
+                    marker=dict(color="yellow", size=8, symbol="diamond"),
+                    name="Support Vectors",
+                )
+            except Exception:
+                st.info("Support vectors not available for RBF surface.")
+            fig_rbf.update_layout(
+                scene=dict(xaxis_title="X₁", yaxis_title="X₂", zaxis_title="Decision Function"),
+                title="RBF Kernel Decision Surface",
+                margin=dict(l=0, r=0, b=0, t=30),
+            )
+            st.plotly_chart(fig_rbf, use_container_width=True)
+
         # Kernel Comparison Dashboard
         st.subheader("Kernel Comparison Dashboard")
         st.markdown("""
