@@ -11,6 +11,10 @@ from src.data_generator import make_dataset
 from src.svm_model import get_model
 from src.plots_2d import plot_decision_boundary_2d
 import plotly.graph_objects as go
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import plotly.express as px
 
 
 def run():
@@ -145,6 +149,61 @@ def run():
             ],
         )
         st.plotly_chart(fig3d, use_container_width=True)
+
+        # Kernel Comparison Dashboard
+        st.subheader("Kernel Comparison Dashboard")
+        st.markdown("""
+        不同 kernel 會改變資料在特徵空間中的分離方式，因此 accuracy 與 support vector 數量會不同。
+        """)
+
+        # Train models for each kernel and evaluate
+        kernels = ["linear", "poly", "rbf", "sigmoid"]
+        results = []
+        for k in kernels:
+            try:
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X, y, test_size=0.3, random_state=42, stratify=y
+                )
+                # Set kernel‑specific parameters
+                if k == "poly":
+                    model_k, _ = get_model(
+                        X_train,
+                        y_train,
+                        kernel=k,
+                        C=C,
+                        degree=degree,
+                        gamma=gamma if gamma != "scale" else "scale",
+                    )
+                else:
+                    model_k, _ = get_model(
+                        X_train,
+                        y_train,
+                        kernel=k,
+                        C=C,
+                        gamma=gamma if k in ["rbf", "sigmoid"] else "scale",
+                    )
+                preds = model_k.predict(X_test)
+                acc = accuracy_score(y_test, preds)
+                sv_cnt = len(model_k.support_vectors_)
+                results.append({"Kernel": k, "Test Accuracy": acc, "Support Vectors": sv_cnt})
+            except Exception as e:
+                st.info(f"Kernel {k} comparison failed: {e}")
+                results.append({"Kernel": k, "Test Accuracy": None, "Support Vectors": None})
+
+        # Show results table
+        if results:
+            df = pd.DataFrame(results)
+            st.dataframe(df.style.format({"Test Accuracy": "{:.2%}"}))
+            # Bar chart of accuracies
+            fig_bar = px.bar(
+                df,
+                x="Kernel",
+                y="Test Accuracy",
+                text="Test Accuracy",
+                title="Kernel Test Accuracy Comparison",
+            )
+            fig_bar.update_traces(texttemplate="%{text:.2%}", textposition="outside")
+            st.plotly_chart(fig_bar, use_container_width=True)
     except Exception as e:
         st.info(f"3D decision surface could not be displayed: {e}")
     # Kernel Trick intro video
