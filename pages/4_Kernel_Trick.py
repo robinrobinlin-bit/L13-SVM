@@ -10,6 +10,7 @@ from pathlib import Path
 from src.data_generator import make_dataset
 from src.svm_model import get_model
 from src.plots_2d import plot_decision_boundary_2d
+import plotly.graph_objects as go
 
 
 def run():
@@ -54,6 +55,55 @@ def run():
     st.write(f"**Kernel**: {kernel}")
     st.write(f"**訓練準確度**: {accuracy * 100:.2f}%")
     st.write(f"**支援向量數量**: {len(model.support_vectors_)} / {len(y)}")
+    # 3D Decision Function Surface
+    try:
+        # Create meshgrid
+        x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+        y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+        xx, yy = np.meshgrid(
+            np.linspace(x_min, x_max, 100),
+            np.linspace(y_min, y_max, 100)
+        )
+        grid = np.c_[xx.ravel(), yy.ravel()]
+        zz = model.decision_function(grid).reshape(xx.shape)
+
+        fig3d = go.Figure()
+        fig3d.add_surface(x=xx, y=yy, z=zz, colorscale="RdBu", showscale=False, opacity=0.7)
+        # Overlay data points
+        fig3d.add_scatter3d(
+            x=X[:, 0],
+            y=X[:, 1],
+            z=np.zeros_like(y),
+            mode="markers",
+            marker=dict(
+                color=["red" if label == 0 else "blue" for label in y],
+                size=4,
+            ),
+            name="Data",
+        )
+        fig3d.update_layout(
+            scene=dict(
+                xaxis_title="X₁",
+                yaxis_title="X₂",
+                zaxis_title="Decision Function",
+            ),
+            title="3D Decision Function Surface",
+            margin=dict(l=0, r=0, b=0, t=30),
+            annotations=[
+                dict(
+                    text="Z 軸代表 SVM decision_function 分數，Z=0 附近就是決策邊界。",
+                    xref="paper",
+                    yref="paper",
+                    x=0,
+                    y=0,
+                    showarrow=False,
+                    font=dict(size=12),
+                )
+            ],
+        )
+        st.plotly_chart(fig3d, use_container_width=True)
+    except Exception as e:
+        st.info(f"3D decision surface could not be displayed: {e}")
     # Kernel Trick intro video
     video_path = Path(__file__).parent.parent / "assets" / "videos" / "kernel_trick_intro.mp4"
     if video_path.is_file():

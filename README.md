@@ -1,4 +1,13 @@
-# -*- coding: utf-8 -*-
+## SVM Interactive Teaching Platform
+
+## Live Demo
+
+https://robin-l13-svm.streamlit.app
+
+## Project Workflow
+
+![workflow](workflow.png)
+-*- coding: utf-8 -*-
 """
 # Online Demo: https://robin-l13-svm.streamlit.app/
 # Repository: https://github.com/robinlin/L13-SVM
