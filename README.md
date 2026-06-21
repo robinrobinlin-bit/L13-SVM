@@ -1,34 +1,36 @@
 # 🎓 SVM Interactive Teaching Platform
 
-**A teaching‑focused interactive web app** built with **Streamlit**, **scikit‑learn**, **Plotly**, and **Manim** to explore Support Vector Machines.
-
----
+## 📖 Project Introduction
+A **teaching‑focused interactive web app** built with **Streamlit**, **scikit‑learn**, **Plotly**, and **Manim** that lets users explore Support Vector Machines (SVM) concepts and visualisations in real‑time.
 
 ## 🌐 Live Demo
-
-https://robin-l13-svm.streamlit.app
+[🔗 Live Demo – Streamlit Cloud](https://robin-l13-svm.streamlit.app)
 
 ## 📦 GitHub Repository
-
-https://github.com/robinrobinlin-bit/L13-SVM
+[🐙 robinrobinlin‑bit/L13‑SVM](https://github.com/robinrobinlin-bit/L13-SVM)
 
 ---
 
-## 📌 Highlights
-- Interactive 2D/3D visualisations of SVM decision boundaries.
-- Real‑time kernel comparison (linear, poly, rbf, sigmoid).
-- Pre‑rendered Manim animations for margin and support‑vector explanations.
-- Step‑by‑step dataset generation and model training.
-- Debug‑friendly logging and clear UI layout.
+## ✨ Project Highlights
+| ✅ | Feature |
+|---|---|
+| 🎨 | 2D & 3D interactive decision‑boundary visualisation |
+| 🔁 | Real‑time kernel comparison (linear, poly, rbf, sigmoid) |
+| 🎞️ | Pre‑rendered Manim animations for margin & support‑vector explanation |
+| 📊 | Dataset generation (blobs, moons, circles, linear classification) |
+| 🐞 | Debug‑friendly logging and clear UI layout |
+| 🚀 | Deployable on Streamlit Community Cloud |
 
 ---
 
 ## 🛠 Tech Stack
-- **Streamlit** – rapid web‑app framework.
-- **scikit‑learn** – SVM implementation.
-- **Plotly** – interactive 2D & 3D charts.
-- **Manim Community** – high‑quality educational animations.
-- **Python 3.12** – core language.
+| 🧰 Component | 📚 Library |
+|--------------|------------|
+| Web framework | **Streamlit** |
+| Machine learning | **scikit‑learn** |
+| Interactive charts | **Plotly** |
+| Educational animations | **Manim Community** |
+| Language | **Python 3.12** |
 
 ---
 
@@ -38,63 +40,48 @@ https://github.com/robinrobinlin-bit/L13-SVM
 ---
 
 ## 📸 Screenshots
-> *Add your screenshots here (e.g., `assets/screenshots/home.png`).*  
-_(You can place images in `assets/screenshots/` and reference them below.)_
-
----
-
-## ✨ Features
-- **Dataset Generation** – blobs, moons, circles, and custom linear classification.
-- **Kernel Trick Page** – switch kernels and visualise 3D decision surfaces.
-- **Support Vector Visualisation** – highlighted in both 2D and 3D plots.
-- **Manim‑Rendered Videos** – margin, support vectors, kernel mapping, 3D mapping.
-- **Comprehensive Documentation** – prompts, log, workflow files.
+| Feature | Image |
+|--------|-------|
+| Interactive SVM UI | ![interactive SVM](screenshots/interactive_svm.png) |
+| 3D Support Vector view | ![support vectors 3D](screenshots/support_vector_3d.png) |
+| Kernel Comparison Dashboard | ![kernel comparison](screenshots/kernel_comparison.png) |
+| RBF Bowl Surface | ![RBF surface](screenshots/rbf_surface.png) |
 
 ---
 
 ## 📂 Project Structure
-- `app.py` – main entry point.
-- `src/` – data generator, SVM model wrapper, 2D plot utilities.
-- `pages/` – Streamlit pages for each tutorial step.
-- `manim_scenes/` – Manim scripts (rendered videos stored in `assets/videos/`).
-- `requirements.txt` – Python dependencies.
-
----
-
-## 📦 Installation
-```bash
-# Recommended: virtualenv or conda
-python -m venv .venv
-# Windows activation
-.venv\Scripts\activate
-pip install -r requirements.txt
 ```
-> **Note:** Manim runs locally; ensure `manim-community` is installed and render videos with:
-```bash
-manim -pql manim_scenes/scene_01_margin.py
-manim -pql manim_scenes/scene_02_support_vectors.py
-manim -pql manim_scenes/scene_03_kernel_trick.py
-manim -pql manim_scenes/scene_04_3d_mapping.py
+├─ app.py                     # Streamlit entry point
+├─ src/                       # Core Python modules
+│   ├─ data_generator.py      # Dataset creation utilities
+│   ├─ svm_model.py           # Wrapper for scikit‑learn SVC
+│   └─ plots_2d.py           # 2‑D Plotly visualisations
+├─ pages/                     # Streamlit pages (one per tutorial step)
+│   ├─ 1_Linear_SVM.py
+│   ├─ 2_Margin_Support_Vectors.py
+│   ├─ 3_Kernel_Trick.py
+│   ├─ 4_RBF_Decision_Surface.py
+│   └─ …
+├─ manim_scenes/              # Manim animation scripts
+├─ assets/
+│   ├─ videos/                # Rendered Manim videos
+│   └─ screenshots/           # Images used in this README
+├─ requirements.txt           # Python dependencies
+└─ workflow.png               # Workflow diagram (shown above)
 ```
 
 ---
 
-## ▶️ Run the App
-```bash
-streamlit run app.py
-```
-
----
-
-## ☁️ Deploy to Streamlit Community Cloud
-1. Push the repository to GitHub.
-2. Go to https://share.streamlit.io and create a **New app**.
-3. Connect your repo, set `app.py` as the entry file.
-4. Deploy – the interactive tutorial will be live.
+## 🔮 Future Work
+- Add **interactive hyper‑parameter tuning** for C, gamma, and degree.
+- Implement **model export** (ONNX/PMML) for downstream use.
+- Expand documentation with **multilingual tutorials**.
+- Integrate **unit tests** and CI pipeline for automated verification.
+- Deploy a **Docker image** for reproducible local setup.
 
 ---
 
 ## 📄 License & Acknowledgements
-- Content written in Traditional Chinese, based on scikit‑learn docs and various SVM tutorials.
+- Content written in Traditional Chinese, inspired by scikit‑learn docs and various SVM tutorials.
 - Manim animations derived from the Manim Community Edition examples.
 - Contributions and issues are welcome via GitHub.
