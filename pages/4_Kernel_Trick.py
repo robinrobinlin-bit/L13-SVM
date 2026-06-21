@@ -36,15 +36,31 @@ def run():
         gamma = "scale"
     # degree 只在 poly 時顯示
     if kernel == "poly":
-        degree = st.sidebar.slider("Degree", 2, 5, 3, step=1)
+        degree = st.sidebar.slider("Degree", 2, 5, 3, step=1, key="degree")
     else:
         degree = 3
+    # Kernel for 3D Surface selection
+    kernel_3d = st.sidebar.selectbox(
+        "Kernel for 3D Surface", ["linear", "poly", "rbf", "sigmoid"],
+        index=0, key="kernel_3d"
+    )
+    C_3d = st.sidebar.slider("C (3D)", 0.01, 10.0, 1.0, step=0.01, key="C_3d")
+    if kernel_3d in ["rbf", "sigmoid"]:
+        gamma_3d = st.sidebar.slider("Gamma (3D)", 0.001, 5.0, 1.0, step=0.001, key="gamma_3d")
+    else:
+        gamma_3d = "scale"
+    if kernel_3d == "poly":
+        degree_3d = st.sidebar.slider("Degree (3D)", 2, 5, 3, step=1, key="degree_3d")
+    else:
+        degree_3d = 3
 
     # 產生資料
     X, y, _ = make_dataset(dataset_name, n_samples=n_samples, noise=noise, random_state=42)
 
     # 訓練模型
     model, accuracy = get_model(X, y, kernel=kernel, C=C, gamma=gamma, degree=degree)
+    # 3D model using selected kernel for surface and support vectors
+    model_3d, _ = get_model(X, y, kernel=kernel_3d, C=C_3d, gamma=gamma_3d, degree=degree_3d)
 
     # 繪圖（使用 2D 版）
     fig = plot_decision_boundary_2d(model, X, y, title=f"Kernel = {kernel.upper()}")
@@ -57,7 +73,7 @@ def run():
     st.write(f"**支援向量數量**: {len(model.support_vectors_)} / {len(y)}")
     # 3D Decision Function Surface
     try:
-        # Create meshgrid
+        # Create meshgrid using original data
         x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
         y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
         xx, yy = np.meshgrid(
@@ -65,7 +81,7 @@ def run():
             np.linspace(y_min, y_max, 100)
         )
         grid = np.c_[xx.ravel(), yy.ravel()]
-        zz = model.decision_function(grid).reshape(xx.shape)
+        zz = model_3d.decision_function(grid).reshape(xx.shape)
 
         fig3d = go.Figure()
         fig3d.add_surface(x=xx, y=yy, z=zz, colorscale="RdBu", showscale=False, opacity=0.7)
@@ -81,6 +97,24 @@ def run():
             ),
             name="Data",
         )
+        # Overlay support vectors (if any)
+        try:
+            sv = model_3d.support_vectors_
+            fig3d.add_scatter3d(
+                x=sv[:, 0],
+                y=sv[:, 1],
+                z=np.zeros(sv.shape[0]),
+                mode="markers",
+                marker=dict(
+                    color="yellow",
+                    size=8,
+                    symbol="diamond",
+                ),
+                name="Support Vectors",
+            )
+        except Exception:
+            # No support vectors available for the selected kernel
+            st.info("Support vectors not available for this kernel.")
         fig3d.update_layout(
             scene=dict(
                 xaxis_title="X₁",
@@ -98,7 +132,16 @@ def run():
                     y=0,
                     showarrow=False,
                     font=dict(size=12),
-                )
+                ),
+                dict(
+                    text="不同 kernel 會改變 decision_function 的形狀",
+                    xref="paper",
+                    yref="paper",
+                    x=0,
+                    y=0.1,
+                    showarrow=False,
+                    font=dict(size=12),
+                ),
             ],
         )
         st.plotly_chart(fig3d, use_container_width=True)
