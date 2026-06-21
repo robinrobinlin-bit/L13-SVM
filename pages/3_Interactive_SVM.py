@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from utils.datasets import generate_dataset
-from utils.svm_model import train_svm
+from utils.svm_model import train_svm, get_model
 from utils.plotting import plot_decision_boundary
 
 st.title("SVM 教學互動網站 - 第 3 章：互動式 SVM 實驗")
@@ -52,12 +52,22 @@ def load_data(name, n, noise, rs=42):
 X, y = load_data(dataset_option, n_samples, noise_value)
 
 # ---- Train model ----
+# ---- Train model ----
 @st.cache_resource(show_spinner=False)
-def get_model(X, y, kernel, C, gamma, degree):
-    model, acc = train_svm(X, y, kernel=kernel, C=C, gamma=gamma, degree=degree)
-    return model, acc
+def get_model_cached(X, y, kernel, C, gamma, degree):
+    """Cache the trained model and its accuracy."""
+    model, accuracy = get_model(X, y, kernel=kernel, C=C, gamma=gamma, degree=degree)
+    return model, accuracy
 
-model, accuracy = get_model(X, y, kernel_option, C_value, gamma_value, degree_value)
+# Retrieve model and accuracy using the cached function
+model, accuracy = get_model_cached(
+    X,
+    y,
+    kernel=kernel_option,
+    C=C_value,
+    gamma=gamma_value,
+    degree=degree_value,
+)
 
 # ---- Plot decision boundary ----
 fig = plot_decision_boundary(model, X, y, title="SVM Decision Boundary")

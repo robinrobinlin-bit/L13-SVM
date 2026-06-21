@@ -1,56 +1,68 @@
-# src/plots_2d.py
-"""
-2D 繪圖模組 – 用於顯示 SVM 的決策邊界、support vectors 以及 margin。
-
-此模組使用 Matplotlib，返回 ``matplotlib.figure.Figure`` 物件，
-在 Streamlit 中可透過 ``st.pyplot`` 直接呈現。
+# -*- coding: utf-8 -*-
+"""src/plots_2d.py
+使用 Plotly 繪製 2D 決策邊界。
 """
 
 from __future__ import annotations
 
-import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.svm import SVC
+import plotly.graph_objects as go
+from .decision_boundary import make_meshgrid, predict_grid
 
-from .decision_boundary import create_meshgrid, predict_decision_boundary, get_decision_function
 
+def plot_decision_boundary_2d(model, X: np.ndarray, y: np.ndarray, title: str = "Decision Boundary"):
+    """回傳 Plotly Figure，顯示資料點、支援向量與決策面。
 
-def plot_decision_boundary_2d(
-    X: np.ndarray,
-    y: np.ndarray,
-    model: SVC,
-    resolution: int = 100,
-    show_margin: bool = True,
-) -> plt.Figure:
-    """繪製 2D 決策邊界與支援向量。
-
-    參數說明:
-    - X, y: 原始資料
-    - model: 已訓練好的 sklearn SVC
-    - resolution: meshgrid 解析度，預設 100（對應 100×100 網格）
-    - show_margin: 是否在圖中顯示 margin 等高線（decision_function = +/-1）
+    Parameters
+    ----------
+    model : sklearn estimator
+        已訓練好的 SVC 模型。
+    X, y : np.ndarray
+        資料點與標籤。
+    title : str, optional
+        圖表標題。
     """
-    # 建立格點
-    xx, yy = create_meshgrid(X, resolution=resolution)
-    # 類別預測
-    Z = predict_decision_boundary(model, xx, yy)
-    # 決策函數（用於 margin）
-    Z_score = get_decision_function(model, xx, yy) if show_margin else None
+    # 建立網格
+    xx, yy = make_meshgrid(X[:, 0], X[:, 1])
+    Z = predict_grid(model, xx, yy)
 
-    fig, ax = plt.subplots(figsize=(6, 5))
-    # 決策邊界顏色映射
-    cmap = plt.cm.RdYlBu
-    ax.contourf(xx, yy, Z, alpha=0.3, cmap=cmap, levels=np.arange(-0.5, 2, 1))
-    # 原始點
-    scatter = ax.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap, edgecolor="k", s=40)
-    # 支援向量
-    sv = model.support_vectors_
-    ax.scatter(sv[:, 0], sv[:, 1], s=100, facecolors="none", edgecolors="gold", linewidths=2, label="Support Vectors")
-    # Margin 等高線（若有）
-    if Z_score is not None:
-        ax.contour(xx, yy, Z_score, levels=[-1, 0, 1], linestyles=["--", "-", "--"], colors="k")
-    ax.set_xlabel("x₁")
-    ax.set_ylabel("x₂")
-    ax.set_title("SVM Decision Boundary (2D)")
-    ax.legend()
+    # 顏色對應
+    colors = np.where(y == 0, "rgba(31, 119, 180,0.5)", "rgba(255, 127, 14,0.5)")
+
+    fig = go.Figure()
+    # 決策面色塊
+    fig.add_trace(
+        go.Contour(
+            x=xx[0],
+            y=yy[:, 0],
+            z=Z,
+            showscale=False,
+            colorscale=[[0, "rgb(31,119,180)"], [1, "rgb(255,127,14)"]],
+            opacity=0.3,
+            hoverinfo="skip",
+        )
+    )
+    # 資料點
+    fig.add_trace(
+        go.Scatter(
+            x=X[:, 0],
+            y=X[:, 1],
+            mode="markers",
+            marker=dict(color=colors, size=8, line=dict(width=1, color="DarkSlateGrey")),
+            name="資料點",
+        )
+    )
+    # 支援向量（如果模型有此屬性）
+    if hasattr(model, "support_vectors_"):
+        sv = model.support_vectors_
+        fig.add_trace(
+            go.Scatter(
+                x=sv[:, 0],
+                y=sv[:, 1],
+                mode="markers",
+                marker=dict(color="gold", size=12, symbol="star"),
+                name="支援向量",
+            )
+        )
+    fig.update_layout(title=title, xaxis_title="X1", yaxis_title="X2", legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
     return fig

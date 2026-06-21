@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 streamlit
 scikit-learn
-numpy
-pandas
-matplotlib
 plotly
+pandas
+numpy
+matplotlib

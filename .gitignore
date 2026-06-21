@@ -1,0 +1,11 @@
+#__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+media/
+archive_pages/
+pages/_old/
+L13-SVM-main/
+L13-SVM.zip
+.venv-manim/
