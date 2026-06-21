@@ -106,6 +106,7 @@ def generate_dataset(name: str, **kwargs) -> tuple[np.ndarray, np.ndarray]:
         "moons": generate_moons_data,
         "circles": generate_circles_data,
         "blobs": generate_blobs_data,
+        "classification": generate_linear_data,
     }
     if name not in dispatch:
         raise ValueError(f"Unknown dataset: {name}. Choose from {list(dispatch.keys())}")
