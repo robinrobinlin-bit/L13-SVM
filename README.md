@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+# Online Demo: https://robin-l13-svm.streamlit.app/
+# Repository: https://github.com/robinlin/L13-SVM
+# Documentation:
+# - [prompts.md](file:///C:/Users/user/Desktop/hw8_svm/prompts.md)
+# - [log.md](file:///C:/Users/user/Desktop/hw8_svm/log.md)
+# - [workflow.md](file:///C:/Users/user/Desktop/hw8_svm/workflow.md)
+# - [workflow.png](file:///C:/Users/user/Desktop/hw8_svm/workflow.png)
 """README.md
 
 # SVM 互動式教學實驗室
